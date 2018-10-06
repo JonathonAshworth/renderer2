@@ -86,7 +86,8 @@ Vector3.prototype.max = function (v) {
     return new Vector3(Math.max(this.x, v.x), Math.max(this.y, v.y), Math.max(this.z, v.z))
 }
 
-// String, String, String => Vector3
+// Axis : 'x' | 'y' | 'z'
+// Axis, Axis, Axis => Vector3
 Vector3.prototype.permute = function (a, b, c) {
     return new Vector3(this[a], this[b], this[c])
 }
