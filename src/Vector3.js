@@ -5,6 +5,11 @@ function Vector3 (x = 0, y = 0, z = 0) {
     this.z = z
 }
 
+// Normal3 => Vector3
+Vector3.fromNormal3 = function (n) {
+    return new Vector3(n.x, n.y, n.z)
+}
+
 // Vector3 => Vector3
 Vector3.prototype.add = function (v) {
     return new Vector3(this.x + v.x, this.y + v.y, this.z + v.z)
@@ -30,12 +35,12 @@ Vector3.prototype.abs = function () {
     return new Vector3(Math.abs(this.x), Math.abs(this.y), Math.abs(this.z))
 }
 
-// Vector3 => Number
+// Vector3 | Normal3 => Number
 Vector3.prototype.dot = function (v) {
     return this.x * v.x + this.y * v.y + this.z * v.z
 }
 
-// Vector3 => Number
+// Vector3 | Normal3 => Number
 Vector3.prototype.absDot = function (v) {
     return Math.abs(this.dot(v))
 }
