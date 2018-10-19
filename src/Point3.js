@@ -37,7 +37,7 @@ Point3.prototype.distance = function (p) {
     return this.subP(p).length()
 }
 
-// Number => Point3
+// Point3, Number => Point3
 Point3.prototype.lerp = function (p, t) {
     return this.scale(1 - t) + p.scale(t)
 }
