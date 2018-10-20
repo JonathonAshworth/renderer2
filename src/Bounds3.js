@@ -138,9 +138,26 @@ Bounds3.prototype.lerp = function (p) {
     )
 }
 
-// Point3 => Point3
+// Point3 => Vector3
 Bounds3.prototype.offset = function (p) {
-    // todo
+    const o = p.subP(this.pMin)
+    if (this.pMax.x > this.pMin.x)
+        o.x = o.x / (this.pMax.x - this.pMin.x)
+    if (this.pMax.y > this.pMin.y)
+        o.y = o.y / (this.pMax.y - this.pMin.y)
+    if (this.pMax.z > this.pMin.z)
+        o.z = o.z / (this.pMax.z - this.pMin.z)
+    return o
 }
+
+// () => [Point3, Number]
+Bounds3.prototype.boundingSphere = function () {
+    const centre = this.pMin.addP(this.pMax).scale(0.5)
+    const radius = centre.distance(this.pMax)
+    return [centre, radius]
+}
+
+// Note: pbrt implementation has an iterator implementation for iterating
+// over integer points within a bounding box. May need something similar
 
 export default Bounds3
