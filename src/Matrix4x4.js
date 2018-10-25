@@ -4,14 +4,16 @@ function Matrix4x4 (m) {
     if (m !== undefined) {
         this.m = m
     } else {
-        this.m = [
-            [1, 0, 0, 0],
-            [0, 1, 0, 0],
-            [0, 0, 1, 0],
-            [0, 0, 0, 1],
-        ]
+        this.m = Matrix4x4.identity()
     }
 }
+
+Matrix4x4.identity = () => [
+    [1, 0, 0, 0],
+    [0, 1, 0, 0],
+    [0, 0, 1, 0],
+    [0, 0, 0, 1],
+]
 
 // Matrix4x4 => Boolean
 Matrix4x4.prototype.equals = function (m) {
@@ -44,10 +46,51 @@ Matrix4x4.prototype.mul = function (m) {
 
 // () => Matrix4x4
 Matrix4x4.prototype.inverse = function () {
-    // TODO
-    // pbrt implementation not listed in book
-    // uses 'numerically stable Gauss-Jordan elimination routine'
-    // ...whatever the fuck that is.
+    // Compute via Gauss-Jordan elimination
+    // This is going to be hectic...
+
+    const i = Matrix4x4.identity()
+    const m = this.m.map((row, index) => [...row.slice(), ...i[index]])
+
+    const swapRows = (a, b) => {
+        const c = m[a]
+        m[a] = m[b]
+        m[b] = c
+    }
+
+    const scaleRow = (r, s) => {
+        m[r] = m[r].map(n => n * s)
+    }
+
+    const addScaledRow = (a, b, s) => {
+        m[a] = m[a].map((n, i) => n + m[b][i] * s)
+    }
+
+    // Convert to row echelon form and set leading co-efficients to 1
+    for (let x = 0; x < 4; x++) {
+        // Find the leading co-efficient and set it to 0
+        let y = x
+        while (m[x][x] === 0 && y < 4) { swapRows(x, y); y++ }
+        if (y === 4 && m[x][x] === 0)
+            throw new Error('Tried to invert uninvertible matrix')
+
+        scaleRow(x, 1 / m[x][x])
+
+        // Zero out the cells below the leading co-efficient
+        for (let z = x + 1; z < 4; z++) {
+            addScaledRow(z, x, -m[z][x])
+        }
+    }
+
+    // Back substitute until we have an identity matrix on the left
+    for (let x = 3; x > 0; x--) {
+        for (let z = x - 1; z >= 0; z--) {
+            addScaledRow(z, x, -m[z][x])
+        }
+    }
+
+    // Inverse matrix is now on the right
+    return m.map(row => row.slice(4, 4))
 }
 
 export default Matrix4x4
