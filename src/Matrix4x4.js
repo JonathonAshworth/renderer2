@@ -47,7 +47,6 @@ Matrix4x4.prototype.mul = function (m) {
 // () => Matrix4x4
 Matrix4x4.prototype.inverse = function () {
     // Compute via Gauss-Jordan elimination
-    // This is going to be hectic...
 
     const i = Matrix4x4.identity()
     const m = this.m.map((row, index) => [...row.slice(), ...i[index]])
@@ -90,7 +89,7 @@ Matrix4x4.prototype.inverse = function () {
     }
 
     // Inverse matrix is now on the right
-    return m.map(row => row.slice(4, 4))
+    return m.map(row => row.slice(4))
 }
 
 export default Matrix4x4
