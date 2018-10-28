@@ -89,7 +89,7 @@ Matrix4x4.prototype.inverse = function () {
     }
 
     // Inverse matrix is now on the right
-    return m.map(row => row.slice(4))
+    return new Matrix4x4(m.map(row => row.slice(4)))
 }
 
 export default Matrix4x4
