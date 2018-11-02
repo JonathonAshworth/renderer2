@@ -20,18 +20,36 @@ function Transform (m, i) {
 // Vector3 => Transform
 Transform.translate = function (delta) {
     return new Transform(
-        new Matrix4x4(
+        new Matrix4x4([
             [1, 0, 0, delta.x],
             [0, 1, 0, delta.y],
             [0, 0, 1, delta.z],
             [0, 0, 0, 1],
-        ),
-        new Matrix4x4(
+        ]),
+        new Matrix4x4([
             [1, 0, 0, -delta.x],
             [0, 1, 0, -delta.y],
             [0, 0, 1, -delta.z],
             [0, 0, 0, 1],
-        )
+        ])
+    )
+}
+
+// Number, Number, Number => Transform
+Transform.scale = function (x, y, z) {
+    return new Transform(
+        new Matrix4x4([
+            [x, 0, 0, 0],
+            [0, y, 0, 0],
+            [0, 0, z, 0],
+            [0, 0, 0, 1],
+        ]),
+        new Matrix4x4([
+            [1/x, 0, 0, 0],
+            [0, 1/y, 0, 0],
+            [0, 0, 1/z, 0],
+            [0, 0, 0, 1],
+        ])
     )
 }
 
