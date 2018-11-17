@@ -98,7 +98,7 @@ Vector3.prototype.permute = function (a, b, c) {
 }
 
 // Vector3 => [Vector3, Vector3, Vector3]
-Vector3.prototype.coordinateSystem () {
+Vector3.prototype.coordinateSystem = function () {
     const p = this.x > this.y
         ? new Vector3(-this.z, 0, this.x).scale(1 / Math.sqrt(this.x**2 + this.z**2))
         : new Vector3(0, this.z, -this.y).scale(1 / Math.sqrt(this.y**2 + this.z**2))

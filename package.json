@@ -1,0 +1,18 @@
+{
+  "name": "renderer2",
+  "version": "0.0.1",
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JonathonAshworth/renderer2.git"
+  },
+  "scripts": {
+    "build": "webpack --mode development --watch"
+  },
+  "author": "Jonathon Ashworth <jonathonashworth@gmail.com>",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "webpack": "^4.25.1",
+    "webpack-cli": "^3.1.2"
+  }
+}

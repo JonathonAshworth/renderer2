@@ -3,6 +3,7 @@ import Vector3 from './Vector3.js'
 import Point3 from './Point3.js'
 import Normal3 from './Normal3.js'
 import Bounds3 from './Bounds3.js'
+import Ray from './Ray.js'
 
 // () => Transform
 // Number[4][4] => Transform
@@ -12,7 +13,7 @@ function Transform (m, i) {
     if (m === undefined) {
         this.m = new Matrix4x4()
         this.mInv = new Matrix4x4()
-    } else if (typeof m === 'Matrix4x4') {
+    } else if (m instanceof Matrix4x4) {
         this.m = m
         this.mInv = i || m.inverse()
     } else {
@@ -144,7 +145,7 @@ Transform.lookAt = function (pos, look, up) {
 }
 
 // Transform => Boolean
-Transform.prototype.equals = function (t) => {
+Transform.prototype.equals = function (t) {
     return this.m.equals(t.m) && this.mInv.equals(t.mInv)
 }
 
