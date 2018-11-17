@@ -1,8 +1,4 @@
-import Vector3 from './pbrt/Vector3.js'
-import Point3 from './pbrt/Point3.js'
-import Ray from './pbrt/Ray.js'
-import Transform from './pbrt/Transform.js'
-import Colour from './custom/Colour.js'
+import RenderWorker from './render.worker.js'
 
 // Constants
 const RENDER_WIDTH = 1316
@@ -11,59 +7,56 @@ const RENDER_HEIGHT = 938
 const HFOV = 180
 const VFOV = 180
 
-
-// Scene Description
-
-// Casts a unit ray from the camera, in camera space
-// (Need to apply transform to turn the ray into world space)
-const castRayFromCamera = (hfov, vfov, width, height, x, y) => {
-    const thetaX = (Math.PI / 180) * ((x / width) * hfov - (0.5 * hfov))
-    const thetaY = (Math.PI / 180) * ((y / height) * vfov - (0.5 * vfov))
-
-    const dirX = Math.sin(thetaX) * Math.cos(thetaY)
-    const dirY = Math.sin(thetaY) * Math.cos(thetaX)
-
-    return new Ray(
-        new Point3(0, 0, 0),
-        new Vector3(dirX, dirY, 1 - dirX **2 - dirY **2),
-    )
-}
-
-const worldToCameraTransform = Transform.lookAt(
-    new Point3(0, 0, 0),
-    new Point3(0, 0, 1),
-    new Vector3(0, 1, 0),
-)
-
-// Assumes ray.direction is a unit vector, otherwise it'll be cooked
-const skyBoxInteraction = ray => new Colour(0.75 + ray.d.y / 4, 1, 1)
-
+const FPS = 60
 
 
 const canvas = document.getElementById('canvas')
 const ctx = canvas.getContext('2d')
-const pixelDataIndex = (x, y) => y * (RENDER_WIDTH * 4) + x * 4
 
-let frameTime = 0
-let frameStartRenderTime = 0
+
+const sceneLength = 4 // seconds
+
+// Origin, LookAt, Up
+const sceneCamera = t => [
+    [0, 0, 0],
+    [0, Math.sin((t/2) * Math.PI), Math.cos((t/2) * Math.PI)],
+    [0, Math.cos((t/2) * Math.PI), -Math.sin((t/2) * Math.PI)],
+]
+
+// Queue up the rendering of frames
+const renderWorker = new RenderWorker()
+for (let i = 0; i < sceneLength * FPS; i++) {
+    renderWorker.sendMessage({
+        frameNumber: i,
+        width: RENDER_WIDTH,
+        height: RENDER_HEIGHT,
+        hfov: HFOV,
+        vfov: VFOV,
+        sceneCamera: sceneCamera(i / FPS),
+    })
+}
+
+// Collect the frames
+const frames = []
+let framesRendered = 0
+let totalRenderTime = 0
+renderWorker.onmessage = function (e) {
+    frames[e.data.frameNumber] = ctx.createImageData(e.data.pixels)
+    totalRenderTime += e.data.renderTime
+    framesRendered++
+}
+
+
+let frameNum = 0
 const renderLoop = () => {
-    frameTime = window.performance.now() - frameStartRenderTime
-    const fps = 1000 / frameTime
-
-    frameStartRenderTime = window.performance.now()
-    const imageData = ctx.createImageData(RENDER_WIDTH, RENDER_HEIGHT)
-
-    for (let i = 0; i < RENDER_WIDTH; i++) {
-        for (let j = 0; j < RENDER_HEIGHT; j++) {
-            const cameraRay = castRayFromCamera(HFOV, VFOV, RENDER_WIDTH, RENDER_HEIGHT, i, j)
-            const worldRay = worldToCameraTransform.inverse().applyR(cameraRay)
-            const pixelColour = skyBoxInteraction(worldRay)
-            imageData.data.set([...pixelColour.rgb(), 255], pixelDataIndex(i, j))
-        }
+    if (framesRendered === sceneLength * FPS) {
+        ctx.putImageData(frames[frameNum], 0, 0)
+        frameNum = frameNum === frames.length - 1 ? 0 : frameNum + 1
+    } else {
+        ctx.fillText('Rendering...', 100, 100)
+        ctx.fillText(`${framesRendered} / ${sceneLength * FPS} frames rendered`, 100, 200)
+        ctx.fillText(`Average frame time: ${totalRenderTime / framesRendered}`, 100, 300)
     }
-
-    ctx.putImageData(imageData, 0, 0)
-    ctx.fillText(fps, 500, 500)
     window.requestAnimationFrame(renderLoop)
 }
 
