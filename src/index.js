@@ -26,7 +26,7 @@ const sceneCamera = t => [
 // Queue up the rendering of frames
 const renderWorker = new RenderWorker()
 for (let i = 0; i < sceneLength * FPS; i++) {
-    renderWorker.sendMessage({
+    renderWorker.postMessage({
         frameNumber: i,
         width: RENDER_WIDTH,
         height: RENDER_HEIGHT,
@@ -41,7 +41,8 @@ const frames = []
 let framesRendered = 0
 let totalRenderTime = 0
 renderWorker.onmessage = function (e) {
-    frames[e.data.frameNumber] = ctx.createImageData(e.data.pixels)
+    frames[e.data.frameNumber] = ctx.createImageData(RENDER_WIDTH, RENDER_HEIGHT)
+    frames[e.data.frameNumber].data.set(e.data.pixels, 0)
     totalRenderTime += e.data.renderTime
     framesRendered++
 }
@@ -53,6 +54,7 @@ const renderLoop = () => {
         ctx.putImageData(frames[frameNum], 0, 0)
         frameNum = frameNum === frames.length - 1 ? 0 : frameNum + 1
     } else {
+        ctx.clearRect(0, 0, RENDER_WIDTH, RENDER_HEIGHT)
         ctx.fillText('Rendering...', 100, 100)
         ctx.fillText(`${framesRendered} / ${sceneLength * FPS} frames rendered`, 100, 200)
         ctx.fillText(`Average frame time: ${totalRenderTime / framesRendered}`, 100, 300)

@@ -23,7 +23,7 @@ const castRayFromCamera = (hfov, vfov, width, height, x, y) => {
 const skyBoxInteraction = ray => new Colour(0.75 + ray.d.y / 4, 1, 1)
 
 // Index into the imageData
-const pixelDataIndex = (x, y) => y * (RENDER_WIDTH * 4) + x * 4
+const pixelDataIndex = (x, y, width) => y * (width * 4) + x * 4
 
 
 onmessage = function (e) {
@@ -49,9 +49,9 @@ onmessage = function (e) {
     for (let i = 0; i < width; i++) {
         for (let j = 0; j < height; j++) {
             const cameraRay = castRayFromCamera(hfov, vfov, width, height, i, j)
-            const worldRay = transform.inverse().applyR(cameraRay)
+            const worldRay = cameraTransform.inverse().applyR(cameraRay)
             const pixelColour = skyBoxInteraction(worldRay)
-            pixels.set([...pixelColour.rgb(), 255], pixelDataIndex(i, j))
+            pixels.set([...pixelColour.rgb(), 255], pixelDataIndex(i, j, width))
         }
     }
 
