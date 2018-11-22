@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "webpack",
-    "serve": "webpack-dev-server"
+    "serve": "node server.js"
   },
   "author": "Jonathon Ashworth <jonathonashworth@gmail.com>",
   "license": "UNLICENSED",
