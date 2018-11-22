@@ -3,6 +3,7 @@ import Point3 from './pbrt/Point3.js'
 import Ray from './pbrt/Ray.js'
 import Transform from './pbrt/Transform.js'
 import Colour from './custom/Colour.js'
+import Sphere from './custom/Sphere.js'
 
 // Casts a unit ray from the camera, in camera space
 // (Need to apply transform to turn the ray into world space)
@@ -19,12 +20,30 @@ const castRayFromCamera = (hfov, vfov, width, height, x, y) => {
     )
 }
 
+
+
 // Assumes ray.direction is a unit vector, otherwise it'll be cooked
 const skyBoxInteraction = ray => new Colour(0.75 + ray.d.y / 4, 1, 1)
 
+const colour = (ray, objs) => {
+    const hits = objs.map(obj => obj.hit(ray))
+    if (hits.every(h => h === null)) {
+        return skyBoxInteraction(ray)
+    } else {
+        let mindex = null
+        let min = Infinity
+        hits.forEach((h, i) => {
+            if (h < min) {
+                mindex = i
+                min = h
+            }
+        })
+        return objs[mindex].colour(ray.t(min))
+    }
+}
+
 // Index into the imageData
 const pixelDataIndex = (x, y, width) => y * (width * 4) + x * 4
-
 
 onmessage = function (e) {
     const {
@@ -34,6 +53,7 @@ onmessage = function (e) {
         hfov,
         vfov,
         sceneCamera,
+        sceneObjects,
     } = e.data
 
     const startTime = performance.now()
@@ -46,11 +66,21 @@ onmessage = function (e) {
         new Vector3(...sceneCamera[2]),
     )
 
+    // Rebuild scene objects
+    const objs = sceneObjects.map(sObj => {
+        switch (sObj.type) {
+            case 'Sphere':
+                return new Sphere(new Point3(...sObj.c), sObj.r)
+            default:
+                return new Sphere()
+        }
+    })
+
     for (let i = 0; i < width; i++) {
         for (let j = 0; j < height; j++) {
             const cameraRay = castRayFromCamera(hfov, vfov, width, height, i, j)
             const worldRay = cameraTransform.inverse().applyR(cameraRay)
-            const pixelColour = skyBoxInteraction(worldRay)
+            const pixelColour = colour(worldRay, objs)
             pixels.set([...pixelColour.rgb(), 255], pixelDataIndex(i, j, width))
         }
     }

@@ -4,8 +4,8 @@ import RenderWorker from './render.worker.js'
 const RENDER_WIDTH = 1316
 const RENDER_HEIGHT = 938
 
-const HFOV = 180
-const VFOV = 180
+const HFOV = 90
+const VFOV = 60
 
 const FPS = 60
 
@@ -23,6 +23,15 @@ const sceneCamera = t => [
     [0, Math.cos((t/2) * Math.PI), -Math.sin((t/2) * Math.PI)],
 ]
 
+const sceneObjects = t => [
+    { type: 'Sphere', c: [5, 3, 0], r: 1.5 },
+    { type: 'Sphere', c: [-4, 10, 0], r: 2 },
+    { type: 'Sphere', c: [0, 7, -2], r: 0.8 },
+    { type: 'Sphere', c: [1, -13, -8], r: 3 },
+    { type: 'Sphere', c: [10, 20, 5], r: 3.5 },
+    { type: 'Sphere', c: [-2, -2, -12], r: 2 },
+]
+
 // Queue up the rendering of frames
 const renderWorker = new RenderWorker()
 for (let i = 0; i < sceneLength * FPS; i++) {
@@ -33,6 +42,7 @@ for (let i = 0; i < sceneLength * FPS; i++) {
         hfov: HFOV,
         vfov: VFOV,
         sceneCamera: sceneCamera(i / FPS),
+        sceneObjects: sceneObjects(i / FPS),
     })
 }
 
