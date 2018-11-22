@@ -33,7 +33,7 @@ const colour = (ray, objs) => {
         let mindex = null
         let min = Infinity
         hits.forEach((h, i) => {
-            if (h < min) {
+            if (h !== null && h < min) {
                 mindex = i
                 min = h
             }

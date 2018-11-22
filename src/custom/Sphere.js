@@ -1,4 +1,5 @@
 import Point3 from '../pbrt/Point3.js'
+import Normal3 from '../pbrt/Normal3.js'
 import Colour from './Colour.js'
 
 // Point3, Number => Sphere
@@ -30,7 +31,8 @@ Sphere.prototype.hit = function (ray) {
 
 // Point3 => Colour
 Sphere.prototype.colour = function (point) {
-    return new Colour(1, 0, 0)
+    const normal = Normal3.fromVector3(point.subP(this.c)).normalise()
+    return new Colour(normal.x, normal.y, normal.z)
 }
 
 export default Sphere

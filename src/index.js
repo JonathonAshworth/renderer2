@@ -8,6 +8,7 @@ const HFOV = 131.6
 const VFOV = 93.8
 
 const FPS = 60
+const NUM_THREADS = 2
 
 
 const canvas = document.getElementById('canvas')
@@ -20,18 +21,43 @@ const sceneLength = 4 // seconds
 const sceneCamera = t => [
     [10 * Math.sin((t/2) * Math.PI), 10, 10 * Math.cos((t/2) * Math.PI)],
     [0, 0, 0],
-    [0, 1, 0],
+    [0, -1, 0],
 ]
 
 const sceneObjects = t => [
     { type: 'Sphere', c: [0, 0, 0], r: 2 },
-    { type: 'Sphere', c: [4, 4, 4], r: 1 },
+    { type: 'Sphere', c: [0, 4, 0], r: 1 },
+    { type: 'Sphere', c: [0, 6, 0], r: 0.5 },
+    { type: 'Sphere', c: [4, 0, 0], r: 1 },
+    { type: 'Sphere', c: [-4, 0, 0], r: 1 },
+    { type: 'Sphere', c: [0, 0, 4], r: 1 },
+    { type: 'Sphere', c: [0, 0, -4], r: 1 },
 ]
 
 // Queue up the rendering of frames
-const renderWorker = new RenderWorker()
+const renderWorkers = []
+for (let i = 0; i < NUM_THREADS; i++)
+    renderWorkers.push(new RenderWorker())
+
+
+// Collect the frames when they come back from the workers
+const frames = []
+let framesRendered = 0
+let totalRenderTime = 0
+
+const handleMessage = function (e) {
+    frames[e.data.frameNumber] = ctx.createImageData(RENDER_WIDTH, RENDER_HEIGHT)
+    frames[e.data.frameNumber].data.set(e.data.pixels, 0)
+    totalRenderTime += e.data.renderTime
+    framesRendered++
+}
+
+renderWorkers.forEach(w => w.onmessage = handleMessage)
+
+
+// Send the frames off to be rendered
 for (let i = 0; i < sceneLength * FPS; i++) {
-    renderWorker.postMessage({
+    renderWorkers[i % NUM_THREADS].postMessage({
         frameNumber: i,
         width: RENDER_WIDTH,
         height: RENDER_HEIGHT,
@@ -42,16 +68,7 @@ for (let i = 0; i < sceneLength * FPS; i++) {
     })
 }
 
-// Collect the frames
-const frames = []
-let framesRendered = 0
-let totalRenderTime = 0
-renderWorker.onmessage = function (e) {
-    frames[e.data.frameNumber] = ctx.createImageData(RENDER_WIDTH, RENDER_HEIGHT)
-    frames[e.data.frameNumber].data.set(e.data.pixels, 0)
-    totalRenderTime += e.data.renderTime
-    framesRendered++
-}
+
 
 
 let frameNum = 0
