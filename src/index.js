@@ -8,7 +8,9 @@ const HFOV = 131.6
 const VFOV = 93.8
 
 const FPS = 60
-const NUM_THREADS = 2
+const NUM_THREADS = 6
+
+const SAMPLES_PER_PIXEL = 4
 
 
 const canvas = document.getElementById('canvas')
@@ -43,12 +45,11 @@ for (let i = 0; i < NUM_THREADS; i++)
 // Collect the frames when they come back from the workers
 const frames = []
 let framesRendered = 0
-let totalRenderTime = 0
+const renderStartTime = performance.now()
 
 const handleMessage = function (e) {
     frames[e.data.frameNumber] = ctx.createImageData(RENDER_WIDTH, RENDER_HEIGHT)
     frames[e.data.frameNumber].data.set(e.data.pixels, 0)
-    totalRenderTime += e.data.renderTime
     framesRendered++
 }
 
@@ -65,6 +66,7 @@ for (let i = 0; i < sceneLength * FPS; i++) {
         vfov: VFOV,
         sceneCamera: sceneCamera(i / FPS),
         sceneObjects: sceneObjects(i / FPS),
+        samplesPerPixel: SAMPLES_PER_PIXEL,
     })
 }
 
@@ -77,6 +79,7 @@ const renderLoop = () => {
         ctx.putImageData(frames[frameNum], 0, 0)
         frameNum = frameNum === frames.length - 1 ? 0 : frameNum + 1
     } else {
+        const totalRenderTime = performance.now() - renderStartTime
         ctx.clearRect(0, 0, RENDER_WIDTH, RENDER_HEIGHT)
         ctx.fillText('Rendering...', 100, 100)
         ctx.fillText(`${framesRendered} / ${sceneLength * FPS} frames rendered`, 100, 200)

@@ -54,9 +54,9 @@ onmessage = function (e) {
         vfov,
         sceneCamera,
         sceneObjects,
+        samplesPerPixel,
     } = e.data
 
-    const startTime = performance.now()
     const pixels = new Uint8ClampedArray(4 * width * height)
 
     // Rebuild camera transform
@@ -78,13 +78,24 @@ onmessage = function (e) {
 
     for (let i = 0; i < width; i++) {
         for (let j = 0; j < height; j++) {
-            const cameraRay = castRayFromCamera(hfov, vfov, width, height, i, j)
-            const worldRay = cameraTransform.inverse().applyR(cameraRay)
-            const pixelColour = colour(worldRay, objs)
+            const samples = []
+            for (let k = 0; k < samplesPerPixel; k++) {
+                const cameraRay = castRayFromCamera(
+                    hfov,
+                    vfov,
+                    width,
+                    height,
+                    i - 0.5 + Math.random(),
+                    j - 0.5 + Math.random(),
+                )
+                const worldRay = cameraTransform.inverse().applyR(cameraRay)
+                samples.push(colour(worldRay, objs))
+            }
+            
+            const pixelColour = Colour.avg(...samples)
             pixels.set([...pixelColour.rgb(), 255], pixelDataIndex(i, j, width))
         }
     }
 
-    const renderTime = performance.now() - startTime
-    postMessage({ frameNumber, pixels, renderTime })
+    postMessage({ frameNumber, pixels })
 }
