@@ -10,14 +10,14 @@ const VFOV = 93.8
 const FPS = 60
 const NUM_THREADS = 6
 
-const SAMPLES_PER_PIXEL = 4
+const SAMPLES_PER_PIXEL = 1
 
 
 const canvas = document.getElementById('canvas')
 const ctx = canvas.getContext('2d')
 
 
-const sceneLength = 4 // seconds
+const sceneLength = 1 // seconds
 
 // Origin, LookAt, Up
 const sceneCamera = t => [
@@ -85,7 +85,7 @@ const renderLoop = () => {
         ctx.fillText(`${framesRendered} / ${sceneLength * FPS} frames rendered`, 100, 200)
         ctx.fillText(`Average frame time: ${totalRenderTime / framesRendered}`, 100, 300)
     }
-    window.requestAnimationFrame(renderLoop)
+    window.setTimeout(() => window.requestAnimationFrame(renderLoop), 1000 / FPS)
 }
 
 window.requestAnimationFrame(renderLoop)

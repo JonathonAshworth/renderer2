@@ -7,16 +7,17 @@ import Sphere from './custom/Sphere.js'
 
 // Casts a unit ray from the camera, in camera space
 // (Need to apply transform to turn the ray into world space)
-const castRayFromCamera = (hfov, vfov, width, height, x, y) => {
+export const castRayFromCamera = (hfov, vfov, width, height, x, y) => {
     const thetaX = (Math.PI / 180) * ((x / width) * hfov - (0.5 * hfov))
     const thetaY = (Math.PI / 180) * ((y / height) * vfov - (0.5 * vfov))
 
     const dirX = Math.sin(thetaX) * Math.cos(thetaY)
     const dirY = Math.sin(thetaY) * Math.cos(thetaX)
+    const dirZ = Math.sqrt(1 - dirX**2 - dirY**2)
 
     return new Ray(
         new Point3(0, 0, 0),
-        new Vector3(dirX, dirY, 1 - dirX **2 - dirY **2),
+        new Vector3(dirX, dirY, dirZ),
     )
 }
 
@@ -25,10 +26,10 @@ const castRayFromCamera = (hfov, vfov, width, height, x, y) => {
 // Assumes ray.direction is a unit vector, otherwise it'll be cooked
 const skyBoxInteraction = ray => new Colour(0.75 + ray.d.y / 4, 1, 1)
 
-const colour = (ray, objs) => {
+const rayHit = (ray, objs) => {
     const hits = objs.map(obj => obj.hit(ray))
     if (hits.every(h => h === null)) {
-        return skyBoxInteraction(ray)
+        return null
     } else {
         let mindex = null
         let min = Infinity
@@ -38,14 +39,45 @@ const colour = (ray, objs) => {
                 min = h
             }
         })
-        return objs[mindex].colour(ray.t(min))
+        return { obj: objs[mindex], point: ray.t(min) }
+    }
+}
+
+const sampleUnitSphere = () => {
+    let point = null
+    do {
+        point = new Point3(
+            Math.random() * 2 - 1,
+            Math.random() * 2 - 1,
+            Math.random() * 2 - 1,
+        )
+    } while (point.distance(new Point3(0, 0, 0)) > 1)
+    return point
+}
+
+const colour = (ray, objs, ttl) => {
+    if (ttl === 0) return new Colour(0, 0, 0)
+    const hit = rayHit(ray, objs)
+    if (hit === null) {
+        // console.log('No hit, calling skybox', ray, objs)
+        return skyBoxInteraction(ray)
+    } else {
+        // console.log('Hit, bouncing', ray, objs, hit)
+        const normal = hit.obj.normal(hit.point)
+        const tangentSphereCenter = hit.point.addV(normal)
+        const samplePoint = tangentSphereCenter.addP(sampleUnitSphere())
+        const newRay = new Ray(
+            hit.point,
+            samplePoint.subP(hit.point).normalise(),
+        )
+        return Colour.avg(colour(newRay, objs, ttl - 1), new Colour(0, 0, 0))
     }
 }
 
 // Index into the imageData
 const pixelDataIndex = (x, y, width) => y * (width * 4) + x * 4
 
-onmessage = function (e) {
+global.onmessage = function (e) {
     const {
         frameNumber,
         width,
@@ -89,7 +121,7 @@ onmessage = function (e) {
                     j - 0.5 + Math.random(),
                 )
                 const worldRay = cameraTransform.inverse().applyR(cameraRay)
-                samples.push(colour(worldRay, objs))
+                samples.push(colour(worldRay, objs, 20))
             }
             
             const pixelColour = Colour.avg(...samples)
