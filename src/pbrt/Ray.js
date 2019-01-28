@@ -1,3 +1,6 @@
+import Point3 from './Point3.js'
+import Vector3 from './Vector3.js'
+
 // Point3, Vector3, Number, Number, Medium => Ray
 function Ray (
     o = new Point3(),

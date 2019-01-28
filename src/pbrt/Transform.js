@@ -227,6 +227,24 @@ Transform.prototype.applyB = function (b) {
     )
 }
 
+// SurfaceInteraction => SurfaceInteraction
+Transform.prototype.applySI = function (si) {
+    // TODO: Transform p and pError based on code in chapter 3
+    const p = null, pError = null
+
+    const wo = this.applyV(si.wo)
+
+    const dpdu = this.applyV(si.dpdu)
+    const dpdv = this.applyV(si.dpdv)
+    const dndu = this.applyN(si.dndu)
+    const dndv = this.applyN(si.dndv)
+
+    // TODO: Shape?
+    const shape = null
+
+    return new SurfaceInteraction(p, si.time, pError, wo, si.uv, dpdu, dpdv, dndu, dndv, shape)
+}
+
 // Transform => Transform
 Transform.prototype.compose = function (t) {
     return new Transform(

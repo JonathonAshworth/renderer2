@@ -10,6 +10,11 @@ Vector3.fromNormal3 = function (n) {
     return new Vector3(n.x, n.y, n.z)
 }
 
+// Vector3 => Boolean
+Vector3.prototype.equals = function (v) {
+    return this.x === v.x && this.y === v.y && this.z = v.z
+}
+
 // Vector3 => Vector3
 Vector3.prototype.add = function (v) {
     return new Vector3(this.x + v.x, this.y + v.y, this.z + v.z)

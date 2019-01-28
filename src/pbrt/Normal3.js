@@ -10,6 +10,11 @@ Normal3.fromVector3 = function (v) {
     return new Normal3(v.x, v.y, v.z)
 }
 
+// Normal3 => Boolean
+Normal3.prototype.equals = function (v) {
+    return this.x === v.x && this.y === v.y && this.z = v.z
+}
+
 // Normal3 => Normal3
 Normal3.prototype.add = function (v) {
     return new Normal3(this.x + v.x, this.y + v.y, this.z + v.z)
@@ -30,6 +35,11 @@ Normal3.prototype.negate = function () {
     return new Normal3(-this.x, -this.y, -this.z)
 }
 
+// Vector3 | Normal3 => Number
+Normal3.prototype.dot = function (v) {
+    return this.x * v.x + this.y * v.y + this.z * v.z
+}
+
 // () => Number
 Normal3.prototype.length = function () {
     return Math.sqrt(this.x ** 2 + this.y ** 2 + this.z ** 2)
@@ -40,7 +50,7 @@ Normal3.prototype.normalise = function () {
     return this.scale(1 / this.length())
 }
 
-// Vector3 => Normal3
+// Normal3 | Vector3 => Normal3
 Normal3.prototype.faceForward = function (v) {
     return v.dot(this) < 0 ? this.negate() : this
 }
