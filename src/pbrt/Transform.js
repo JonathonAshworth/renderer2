@@ -205,7 +205,7 @@ Transform.prototype.applyR = function (r) {
     const d = this.applyV(r.d)
     return new Ray(o, d, r.tMax, r.time, r.medium)
     // TODO: Double check this, may be incorrect
-    // May need to apply performance improvements from page 233
+    // May need to apply performance improvements from page 233 of PBR
 }
 
 // Bounds3 => Bounds3
@@ -229,7 +229,7 @@ Transform.prototype.applyB = function (b) {
 
 // SurfaceInteraction => SurfaceInteraction
 Transform.prototype.applySI = function (si) {
-    // TODO: Transform p and pError based on code in chapter 3
+    // TODO: Transform p and pError based on code in chapter 3 of PBR
     const p = null, pError = null
 
     const wo = this.applyV(si.wo)
